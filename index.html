@@ -320,17 +320,13 @@ function render(){
   var streak = calcStreak();
   var best = bestStreak();
   var total = 0;
-  var hasMissed = false;
-  for(var k in d){
-    if(d[k] === 'checked') total++;
-    if(d[k] === 'missed') hasMissed = true;
-  }
+  for(var k in d){ if(d[k] === 'checked') total++; }
 
   document.getElementById('sBest').textContent = best;
   document.getElementById('sTotal').textContent = total;
   document.getElementById('sCurrent').textContent = streak;
 
-  applyBgGlow(hasMissed ? 0 : best);
+  applyBgGlow(best);
 
   if(firstRender){
     firstRender = false;
