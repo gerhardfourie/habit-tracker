@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HABIT // TRACKER</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#06060c;--bg2:#0c0c18;--card:#10101e;--border:#1a1a30;--cyan:#00e5ff;--green:#00ff6a;--red:#ff003c;--purple:#a855f7;--magenta:#ff2d95;--text:#d4d4e0;--dim:#4a4a6a}
+body{font-family:'Share Tech Mono',monospace;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;position:relative}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.04) 2px,rgba(0,0,0,0.04) 4px);pointer-events:none;z-index:9999}
+#ambientGlow{position:fixed;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 50% 0%,rgba(0,255,106,0.0) 0%,transparent 60%);pointer-events:none;z-index:0;transition:background 2s ease}
+.container{max-width:880px;margin:0 auto;padding:40px 20px;position:relative;z-index:1}
+.header{text-align:center;margin-bottom:48px}
+.header h1{font-family:'Orbitron',sans-serif;font-size:2.8rem;font-weight:900;letter-spacing:0.25em;color:var(--cyan);text-shadow:0 0 20px rgba(0,229,255,0.4),0 0 60px rgba(0,229,255,0.15)}
+.header .tagline{font-size:0.72rem;color:var(--dim);letter-spacing:0.6em;text-transform:uppercase;margin-top:6px}
+.stats-bar{display:flex;justify-content:center;gap:48px;margin-top:24px;padding:18px 24px;border:1px solid var(--border);border-radius:10px;background:linear-gradient(135deg,rgba(0,229,255,0.02),rgba(168,85,247,0.02))}
+.stat{text-align:center}
+.stat .val{font-family:'Orbitron',sans-serif;font-size:1.8rem;font-weight:700;color:var(--green);text-shadow:0 0 15px rgba(0,255,106,0.4)}
+.stat .lbl{font-size:0.6rem;color:var(--dim);letter-spacing:0.35em;text-transform:uppercase;margin-top:3px}
+.add-bar{display:flex;gap:10px;margin-bottom:40px}
+.add-bar input{flex:1;background:var(--card);border:1px solid var(--border);color:var(--text);padding:13px 18px;font-family:'Share Tech Mono',monospace;font-size:0.85rem;border-radius:8px;outline:none;transition:all .3s}
+.add-bar input:focus{border-color:var(--cyan);box-shadow:0 0 12px rgba(0,229,255,0.15)}
+.add-bar input::placeholder{color:var(--dim)}
+.btn{background:transparent;border:1px solid var(--cyan);color:var(--cyan);padding:13px 28px;font-family:'Orbitron',sans-serif;font-size:0.7rem;font-weight:500;letter-spacing:0.2em;border-radius:8px;cursor:pointer;transition:all .3s;text-transform:uppercase}
+.btn:hover{background:rgba(0,229,255,0.08);box-shadow:0 0 16px rgba(0,229,255,0.2)}
+.habit-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:24px 28px;margin-bottom:20px;transition:all .5s;position:relative;overflow:hidden}
+.habit-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0.3}
+.habit-card:hover{border-color:rgba(0,229,255,0.15)}
+.habit-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.habit-name{font-family:'Orbitron',sans-serif;font-size:0.95rem;font-weight:700;letter-spacing:0.08em;color:var(--cyan)}
+.habit-meta{display:flex;align-items:center;gap:16px}
+.habit-streak-badge{font-size:0.7rem;color:var(--green);text-shadow:0 0 8px rgba(0,255,106,0.3);display:flex;align-items:center;gap:5px}
+.habit-streak-badge .fire{font-size:0.85rem}
+.del-btn{background:none;border:none;color:var(--dim);cursor:pointer;font-size:1rem;padding:4px 8px;border-radius:4px;transition:all .3s}
+.del-btn:hover{color:var(--red);text-shadow:0 0 10px rgba(255,0,60,0.4)}
+.grid-head{display:grid;grid-template-columns:90px repeat(5,1fr);gap:5px;margin-bottom:5px}
+.grid-head span{text-align:center;font-size:0.6rem;color:var(--dim);letter-spacing:0.25em;text-transform:uppercase;padding:5px 0}
+.week-row{display:grid;grid-template-columns:90px repeat(5,1fr);gap:5px;margin-bottom:5px}
+.wk-label{font-size:0.62rem;color:var(--dim);display:flex;align-items:center;padding-left:2px;white-space:nowrap}
+.cell{aspect-ratio:1;max-height:54px;border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .25s;font-size:1.1rem;user-select:none;position:relative}
+.cell:hover:not(.future){border-color:rgba(0,229,255,0.4);transform:scale(1.08)}
+.cell.checked{color:var(--green);text-shadow:0 0 10px rgba(0,255,106,0.5)}
+.cell.checked .mark{font-weight:bold}
+.cell.missed{border-color:rgba(255,0,60,0.4);color:var(--red);text-shadow:0 0 10px rgba(255,0,60,0.5);background:rgba(255,0,60,0.04)!important}
+.cell.future{opacity:0.2;cursor:default;pointer-events:none}
+.cell.today{border-color:var(--cyan);box-shadow:0 0 12px rgba(0,229,255,0.2)}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
+.cell.pop{animation:pop .25s ease}
+.cell .mark{position:relative;z-index:1;font-size:1.15rem}
+.empty-state{text-align:center;padding:60px 20px;color:var(--dim);border:1px dashed var(--border);border-radius:14px}
+.empty-state .icon{font-size:2.5rem;margin-bottom:12px;opacity:0.4}
+.empty-state p{font-size:0.8rem;letter-spacing:0.1em}
+@media(max-width:600px){.header h1{font-size:1.6rem;letter-spacing:0.15em}.stats-bar{gap:20px;padding:14px 16px}.stat .val{font-size:1.3rem}.grid-head,.week-row{grid-template-columns:64px repeat(5,1fr)}.habit-card{padding:16px}.container{padding:24px 12px}.cell{max-height:44px;border-radius:6px}}
+</style>
+</head>
+<body>
+<div id="ambientGlow"></div>
+<div class="container">
+  <div class="header">
+    <h1>HABIT TRACKER</h1>
+    <div class="tagline">discipline equals freedom</div>
+    <div class="stats-bar">
+      <div class="stat"><div class="val" id="sBest">0</div><div class="lbl">Best Streak</div></div>
+      <div class="stat"><div class="val" id="sTotal">0</div><div class="lbl">Total Checks</div></div>
+      <div class="stat"><div class="val" id="sWeek">0%</div><div class="lbl">This Week</div></div>
+    </div>
+  </div>
+  <div class="add-bar">
+    <input type="text" id="inp" placeholder="+ Add a new habit..." onkeydown="if(event.key==='Enter')addHabit()"/>
+    <button class="btn" onclick="addHabit()">Add</button>
+  </div>
+  <div id="habits"></div>
+</div>
+<script>
+const WEEKS=8,STORAGE_KEY='htracker_v2';
+const DAYS=['MON','TUE','WED','THU','FRI'];
+let state=load();
+function load(){try{const s=localStorage.getItem(STORAGE_KEY);if(s)return JSON.parse(s);}catch(e){}return{habits:['Exercise','Deep Work','Reading'],data:{}};}
+function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}
+function getMonday(d){const dt=new Date(d);const day=dt.getDay();const diff=dt.getDate()-day+(day===0?-6:1);dt.setDate(diff);dt.setHours(0,0,0,0);return dt;}
+function fmtDate(d){return d.toISOString().slice(0,10)}
+function fmtWeek(d){const m=d.getMonth()+1,day=d.getDate();return (day<10?'0':'')+day+'/'+(m<10?'0':'')+m;}
+function getWeeks(){const today=new Date();const mon=getMonday(today);const weeks=[];for(let i=WEEKS-1;i>=0;i--){const wk=new Date(mon);wk.setDate(wk.getDate()-i*7);const days=[];for(let j=0;j<5;j++){const d=new Date(wk);d.setDate(d.getDate()+j);days.push(d);}weeks.push({start:wk,days});}return weeks;}
+function calcStreak(habit,upToDate){const d=state.data[habit]||{};let streak=0,dt=new Date(upToDate);while(true){const dow=dt.getDay();if(dow===0||dow===6){dt.setDate(dt.getDate()-1);continue;}const key=fmtDate(dt);if(d[key]==='checked'){streak++;dt.setDate(dt.getDate()-1);}else break;}return streak;}
+function bestStreak(habit){const d=state.data[habit]||{};const keys=Object.keys(d).filter(k=>d[k]==='checked').sort();if(!keys.length)return 0;let best=1,cur=1;for(let i=1;i<keys.length;i++){let expected=new Date(keys[i-1]);expected.setDate(expected.getDate()+1);while(expected.getDay()===0||expected.getDay()===6)expected.setDate(expected.getDate()+1);if(fmtDate(expected)===keys[i]){cur++;if(cur>best)best=cur;}else cur=1;}return best;}
+function greenIntensity(streak){const t=Math.min(streak,30)/30;const alpha=0.04+t*0.45;return 'rgba(0,255,106,'+alpha.toFixed(3)+')';}
+function greenBorder(streak){const t=Math.min(streak,30)/30;const alpha=0.2+t*0.8;return 'rgba(0,255,106,'+alpha.toFixed(2)+')';}
+function toggle(habit,dateStr){if(!state.data[habit])state.data[habit]={};const cur=state.data[habit][dateStr];if(!cur||cur==='none'){state.data[habit][dateStr]='checked';}else if(cur==='checked'){state.data[habit][dateStr]='missed';}else{delete state.data[habit][dateStr];}save();render();}
+function addHabit(){const inp=document.getElementById('inp');const name=inp.value.trim();if(!name||state.habits.includes(name))return;state.habits.push(name);save();inp.value='';render();}
+function removeHabit(h){state.habits=state.habits.filter(x=>x!==h);delete state.data[h];save();render();}
+function updateStats(){let totalChecks=0,globalBest=0;const today=new Date();const mon=getMonday(today);let weekChecks=0,weekTotal=0;state.habits.forEach(h=>{const d=state.data[h]||{};Object.values(d).forEach(v=>{if(v==='checked')totalChecks++;});const b=bestStreak(h);if(b>globalBest)globalBest=b;for(let i=0;i<5;i++){const dt=new Date(mon);dt.setDate(dt.getDate()+i);if(dt<=today){weekTotal++;if(d[fmtDate(dt)]==='checked')weekChecks++;}}});document.getElementById('sBest').textContent=globalBest;document.getElementById('sTotal').textContent=totalChecks;document.getElementById('sWeek').textContent=weekTotal?Math.round(weekChecks/weekTotal*100)+'%':'0%';const glowAmt=Math.min(globalBest,30)/30*0.08;document.getElementById('ambientGlow').style.background='radial-gradient(ellipse at 50% 0%,rgba(0,255,106,'+glowAmt+') 0%,transparent 60%)';}
+function render(){const container=document.getElementById('habits');const weeks=getWeeks();const today=fmtDate(new Date());if(!state.habits.length){container.innerHTML='<div class="empty-state"><div class="icon">&#9776;</div><p>Add your first habit to begin tracking</p></div>';updateStats();return;}let html='';state.habits.forEach(habit=>{const d=state.data[habit]||{};const streak=calcStreak(habit,new Date());html+='<div class="habit-card"><div class="habit-top"><span class="habit-name">'+habit+'</span><div class="habit-meta">';if(streak>0)html+='<span class="habit-streak-badge"><span class="fire">&#9889;</span>'+streak+' day streak</span>';html+='<button class="del-btn" onclick="removeHabit(\x27'+habit.replace(/'/g,"\\x27")+'\x27)" title="Delete">&#10005;</button></div></div>';html+='<div class="grid-head"><span></span>'+DAYS.map(function(x){return '<span>'+x+'</span>';}).join('')+'</div>';weeks.forEach(wk=>{html+='<div class="week-row"><div class="wk-label">'+fmtWeek(wk.start)+'</div>';wk.days.forEach(day=>{const key=fmtDate(day);const isFuture=key>today;const isToday=key===today;const val=d[key]||'none';let cls='cell';if(isFuture)cls+=' future';if(isToday)cls+=' today';let bg='',borderC='';if(val==='checked'){cls+=' checked';const s=calcStreak(habit,day);bg=greenIntensity(s);borderC=greenBorder(s);}else if(val==='missed'){cls+=' missed';}const style=bg?'background:'+bg+';border-color:'+borderC:'';const mark=val==='checked'?'&#10003;':val==='missed'?'&#10007;':'';html+='<div class="'+cls+'" style="'+style+'" onclick="cellClick(this,\x27'+habit.replace(/'/g,"\\x27")+'\x27,\x27'+key+'\x27)"><span class="mark">'+mark+'</span></div>';});html+='</div>';});html+='</div>';});container.innerHTML=html;updateStats();}
+function cellClick(el,habit,dateStr){el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');toggle(habit,dateStr);}
+render();
+</script>
+</body>
+</html>
